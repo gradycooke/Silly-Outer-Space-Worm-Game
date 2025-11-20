@@ -43,14 +43,14 @@ function handleGlobalKeys(e) {
     document.getElementById('gameOverScreen').style.display = 'none';
     gameOver = false;
     youWin = false;
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    if (gameOverVisible) {
-      startGame(speed);
-    } else {
-      paused = !paused;
-      if (paused) clearInterval(gameLoop);
-      else gameLoop = setInterval(update, 1000 / speed);
-    }
+  } else if (e.key === 'Enter') {
+  // Always restart game when Enter is pressed (regardless of state)
+    startGame(speed);
+  } else if (e.key === ' ') {
+    // Only space bar pauses/resumes the game
+    paused = !paused;
+    if (paused) clearInterval(gameLoop);
+    else gameLoop = setInterval(update, 1000 / speed);
   }
 }
 
@@ -203,6 +203,7 @@ function draw() {
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 }
+
 
 
 
