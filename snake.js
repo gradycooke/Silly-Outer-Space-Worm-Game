@@ -9,13 +9,8 @@ const eatSound = new Audio('chime-sound-7143.ogg');
 const gameOverSound = new Audio('negative_beeps-6008.ogg');
 const winSound = new Audio('short-crowd-cheer-6713.ogg');
 
-let bgReady = false;
 const bgImage = new Image();
-bgImage.src = "starry_background.jpg";
-bgImage.onload = () => {
-  bgReady = true;
-  document.getElementById('menu').style.display = 'block';
-};
+bgImage.src = "starry background.jpg";
 
 let difficultyLabel = "Easy";
 let snake = [{ x: 200, y: 200 }];
@@ -175,13 +170,7 @@ function showGameOverScreen(title, score) {
 }
 
 function draw() {
-  // ✅ Only draw background if image is fully loaded
-  if (bgReady) {
-    ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
-  } else {
-    // Fallback: clear canvas if background isn't ready
-    ctx.clearRect(0, 0, canvas.width, GAME_HEIGHT);
-  }
+  ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
 
   ctx.fillStyle = 'red';
   ctx.fillRect(food.x, food.y, TILE_SIZE, TILE_SIZE);
@@ -214,14 +203,6 @@ function draw() {
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 }
-
-bgImage.onload = () => {
-  document.getElementById('menu').style.display = 'block';
-  
-  document.addEventListener('keydown', handleGlobalKeys);
-  document.addEventListener('keydown', changeDirection);
-};
-
 
 
 
