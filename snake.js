@@ -26,11 +26,12 @@ let youWin = false;
 document.addEventListener('keydown', handleGlobalKeys);
 document.addEventListener('keydown', changeDirection);
 
+// 🧠 Handle game controls
 function handleGlobalKeys(e) {
   const menuVisible = document.getElementById('menu').style.display !== 'none';
   const gameOverVisible = document.getElementById('gameOverScreen').style.display !== 'none';
 
-  // MENU MODE: Handle difficulty selection
+  // 🔢 MENU: Difficulty selection
   if (menuVisible) {
     if (e.key === '1') startGame(10);
     else if (e.key === '2') startGame(20);
@@ -38,26 +39,25 @@ function handleGlobalKeys(e) {
     return;
   }
 
-  // Return to difficulty menu
+  // 🔙 Back to menu from game over or running game
   if (e.key === 'Backspace') {
     clearInterval(gameLoop);
     gameLoop = null;
     paused = false;
     gameOver = false;
     youWin = false;
-
     document.getElementById('gameOverScreen').style.display = 'none';
     document.getElementById('menu').style.display = 'block';
     return;
   }
 
-  // Always restart game with current speed
+  // 🔄 Restart with current speed
   if (e.key === 'Enter') {
-    startGame(speed);
+    restartGame();
     return;
   }
 
-  // Pause/unpause
+  // ⏸️ Pause toggle
   if (e.key === ' ') {
     if (!gameOver && !youWin) {
       paused = !paused;
@@ -71,6 +71,7 @@ function handleGlobalKeys(e) {
   }
 }
 
+// 🟢 Start game with new difficulty
 function startGame(selectedSpeed) {
   speed = selectedSpeed;
   paused = false;
@@ -86,15 +87,32 @@ function startGame(selectedSpeed) {
   document.getElementById('gameOverScreen').style.display = 'none';
 
   resetGame();
+  clearInterval(gameLoop);
   gameLoop = setInterval(update, 1000 / speed);
 }
 
+// 🔁 Restart without changing difficulty
+function restartGame() {
+  paused = false;
+  gameOver = false;
+  youWin = false;
+
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('gameOverScreen').style.display = 'none';
+
+  resetGame();
+  clearInterval(gameLoop);
+  gameLoop = setInterval(update, 1000 / speed);
+}
+
+// 🧼 Reset game objects
 function resetGame() {
   snake = [{ x: 200, y: 200 }];
   direction = 'RIGHT';
   spawnFood();
 }
 
+// 🕹️ Snake movement
 function changeDirection(e) {
   if (directionChanged || gameOver || document.getElementById('menu').style.display !== 'none') return;
 
@@ -114,12 +132,12 @@ function changeDirection(e) {
   }
 }
 
+// 🍎 Place food
 function spawnFood() {
   let valid = false;
   while (!valid) {
     const x = Math.floor(Math.random() * (canvas.width / TILE_SIZE)) * TILE_SIZE;
     const y = Math.floor(Math.random() * (GAME_HEIGHT / TILE_SIZE)) * TILE_SIZE;
-
     const onSnake = snake.some(segment => segment.x === x && segment.y === y);
     if (!onSnake) {
       food = { x, y };
@@ -128,6 +146,7 @@ function spawnFood() {
   }
 }
 
+// 🔄 Game loop
 function update() {
   if (paused || gameOver || youWin) return;
 
@@ -138,7 +157,7 @@ function update() {
   if (direction === 'RIGHT') head.x += TILE_SIZE;
   snake.unshift(head);
 
-  // Check win condition BEFORE collision
+  // 🍽️ Eat food or move
   if (head.x === food.x && head.y === food.y) {
     eatSound.currentTime = 0;
     eatSound.play();
@@ -151,7 +170,7 @@ function update() {
     snake.pop();
   }
 
-  // Check for wall or self collision
+  // 💀 Collisions
   if (
     head.x < 0 || head.y < 0 ||
     head.x >= canvas.width || head.y >= GAME_HEIGHT ||
@@ -165,6 +184,7 @@ function update() {
   directionChanged = false;
 }
 
+// ❌ Game over
 function loseGame() {
   clearInterval(gameLoop);
   gameOver = true;
@@ -173,13 +193,16 @@ function loseGame() {
   showGameOverScreen("GAME OVER", snake.length);
 }
 
+// 🏆 Win!
 function winGame() {
   clearInterval(gameLoop);
   youWin = true;
+  winSound.currentTime = 0;
   winSound.play();
   showGameOverScreen("YOU WIN!", snake.length);
 }
 
+// 🪧 Show end screen
 function showGameOverScreen(title, score) {
   document.getElementById('gameOverScreen').style.display = 'block';
   document.getElementById('gameOverTitle').textContent = title;
@@ -187,6 +210,7 @@ function showGameOverScreen(title, score) {
   document.getElementById('finalDifficulty').textContent = `Difficulty: ${difficultyLabel}`;
 }
 
+// 🎨 Render everything
 function draw() {
   ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
 
@@ -198,30 +222,31 @@ function draw() {
     ctx.fillRect(segment.x, segment.y, TILE_SIZE, TILE_SIZE);
   }
 
-  // Score Bar background
+  // UI background
   ctx.fillStyle = 'black';
   ctx.fillRect(0, GAME_HEIGHT, canvas.width, canvas.height - GAME_HEIGHT);
 
-  // Score text
+  // 🧾 Score
   ctx.fillStyle = 'white';
   ctx.font = '20px Century Gothic';
   ctx.textAlign = 'start';
   ctx.fillText(`Score: ${snake.length}`, 10, GAME_HEIGHT + 25);
 
-  // Controls instructions
+  // 🕹️ Controls
   ctx.fillStyle = '#ccc';
   ctx.font = '12px Century Gothic';
   const instructions = 'BACKSPACE = Change Difficulty | ENTER = Restart | SPACE = Pause';
   const instructionsWidth = ctx.measureText(instructions).width;
   ctx.fillText(instructions, canvas.width - instructionsWidth - 10, GAME_HEIGHT + 18);
 
-  // Copyright footer
+  // © Footer
   const footer = '@ MNNA 2025 | Not For Redistribution';
   ctx.font = '10px Century Gothic';
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
-
 }
+
+
 
 
 
