@@ -43,14 +43,12 @@ function handleGlobalKeys(e) {
     document.getElementById('gameOverScreen').style.display = 'none';
     gameOver = false;
     youWin = false;
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    if (gameOverVisible) {
-      startGame(speed);
-    } else {
-      paused = !paused;
-      if (paused) clearInterval(gameLoop);
-      else gameLoop = setInterval(update, 1000 / speed);
-    }
+  else if (e.key === 'Enter') {
+    startGame(speed); 
+  } else if (e.key === ' ') {
+    paused = !paused; 
+    if (paused) clearInterval(gameLoop);
+    else gameLoop = setInterval(update, 1000 / speed);
   }
 }
 
@@ -205,4 +203,5 @@ function draw() {
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 
 }
+
 
