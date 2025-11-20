@@ -140,7 +140,7 @@ function update() {
     head.x >= canvas.width || head.y >= GAME_HEIGHT ||
     snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
   ) {
-    loseGame();
+    Game();
     return;
   }
 
@@ -151,6 +151,8 @@ function update() {
 function loseGame() {
   clearInterval(gameLoop);
   gameOver = true;
+
+  gameOverSound.pause();
   gameOverSound.currentTime = 0;
   gameOverSound.play();
   showGameOverScreen("GAME OVER", snake.length);
@@ -204,6 +206,7 @@ function draw() {
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 }
+
 
 
 
