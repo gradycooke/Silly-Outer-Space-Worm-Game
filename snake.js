@@ -10,7 +10,7 @@ const gameOverSound = new Audio('negative_beeps-6008.ogg');
 const winSound = new Audio('short-crowd-cheer-6713.ogg');
 
 const bgImage = new Image();
-bgImage.src = "starry_background.jpg";
+bgImage.src = "starry background.jpg";
 
 let difficultyLabel = "Easy";
 let snake = [{ x: 200, y: 200 }];
@@ -26,10 +26,9 @@ let youWin = false;
 document.addEventListener('keydown', handleGlobalKeys);
 document.addEventListener('keydown', changeDirection);
 
-let lastSelectedSpeed = 10; // default to Easy
-
 function handleGlobalKeys(e) {
   const menuVisible = document.getElementById('menu').style.display !== 'none';
+  const gameOverVisible = document.getElementById('gameOverScreen').style.display !== 'none';
 
   if (menuVisible) {
     if (e.key === '1') startGame(10);
@@ -44,11 +43,10 @@ function handleGlobalKeys(e) {
     document.getElementById('gameOverScreen').style.display = 'none';
     gameOver = false;
     youWin = false;
-  } else if (e.key === 'Enter') {
-    // ✅ Restart game using last selected speed
-    startGame(lastSelectedSpeed);
-  } else if (e.key === ' ') {
-    if (!gameOver && !youWin) {
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    if (gameOverVisible) {
+      startGame(speed);
+    } else {
       paused = !paused;
       if (paused) clearInterval(gameLoop);
       else gameLoop = setInterval(update, 1000 / speed);
@@ -57,9 +55,6 @@ function handleGlobalKeys(e) {
 }
 
 function startGame(selectedSpeed) {
-  clearInterval(gameLoop);
-
-  lastSelectedSpeed = selectedSpeed;
   speed = selectedSpeed;
   paused = false;
   gameOver = false;
@@ -74,7 +69,6 @@ function startGame(selectedSpeed) {
   document.getElementById('gameOverScreen').style.display = 'none';
 
   resetGame();
-
   gameLoop = setInterval(update, 1000 / speed);
 }
 
@@ -209,7 +203,6 @@ function draw() {
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 }
-
 
 
 
