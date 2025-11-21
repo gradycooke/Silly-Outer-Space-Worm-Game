@@ -26,9 +26,10 @@ let youWin = false;
 document.addEventListener('keydown', handleGlobalKeys);
 document.addEventListener('keydown', changeDirection);
 
+let lastSelectedSpeed = 10; // default to Easy
+
 function handleGlobalKeys(e) {
   const menuVisible = document.getElementById('menu').style.display !== 'none';
-  const gameOverVisible = document.getElementById('gameOverScreen').style.display !== 'none';
 
   if (menuVisible) {
     if (e.key === '1') startGame(10);
@@ -44,17 +45,19 @@ function handleGlobalKeys(e) {
     gameOver = false;
     youWin = false;
   } else if (e.key === 'Enter') {
-    // Always restart game when Enter is pressed
-    startGame(speed);
+    // ✅ Restart game using last selected speed
+    startGame(lastSelectedSpeed);
   } else if (e.key === ' ') {
-    // Only space bar pauses/resumes the game
-    paused = !paused;
-    if (paused) clearInterval(gameLoop);
-    else gameLoop = setInterval(update, 1000 / speed);
+    if (!gameOver && !youWin) {
+      paused = !paused;
+      if (paused) clearInterval(gameLoop);
+      else gameLoop = setInterval(update, 1000 / speed);
+    }
   }
 }
 
 function startGame(selectedSpeed) {
+  lastSelectedSpeed = selectedSpeed;
   speed = selectedSpeed;
   paused = false;
   gameOver = false;
@@ -203,6 +206,7 @@ function draw() {
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
 }
+
 
 
 
