@@ -10,7 +10,7 @@ const gameOverSound = new Audio('negative_beeps-6008.ogg');
 const winSound = new Audio('short-crowd-cheer-6713.ogg');
 
 const bgImage = new Image();
-bgImage.src = "starry background.jpg";
+bgImage.src = "starry_background.jpg";
 
 let difficultyLabel = "Easy";
 let snake = [{ x: 200, y: 200 }];
@@ -202,4 +202,5 @@ function draw() {
   ctx.font = '10px Century Gothic';
   const footerWidth = ctx.measureText(footer).width;
   ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
+
 }
