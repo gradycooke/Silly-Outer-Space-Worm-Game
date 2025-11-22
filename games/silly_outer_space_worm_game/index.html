@@ -19,6 +19,8 @@
 
     canvas {
       border: 2px solid white;
+      z-index: 1;
+      position: relative;
     }
 
     #menu {
@@ -41,9 +43,32 @@
       font-size: 20px;
       padding: 10px 20px;
     }
+
+    /* --- Home Button Styling --- */
+    #homeButton {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      padding: 10px 15px;
+      font-size: 18px;
+      color: white;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.3s ease, transform 0.2s ease;
+      z-index: 10;
+    }
+
+    #homeButton:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05);
+    }
   </style>
 </head>
 <body>
+
+  <!-- ✅ Home Button -->
+  <a href="../../index.html" id="homeButton">🏠 Home</a>
 
   <!-- Difficulty Menu -->
   <div id="menu">
