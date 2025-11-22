@@ -46,7 +46,7 @@
 
     h1 {
       font-size: 2.8rem;
-      margin-top: 180px; /* Adjusted spacing to balance larger logo */
+      margin-top: 180px;
     }
 
     p {
@@ -56,6 +56,19 @@
 
     main {
       margin-top: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* --- NEW BACKGROUND AROUND BUTTONS --- */
+    .button-section {
+      background: radial-gradient(circle at center, rgba(60, 0, 80, 0.4), rgba(20, 0, 40, 0.9));
+      padding: 50px 0;
+      border-radius: 20px;
+      width: 60%;
+      margin: 0 auto;
+      box-shadow: 0 0 40px rgba(100, 0, 150, 0.4);
+      backdrop-filter: blur(6px);
     }
 
     ul {
@@ -115,6 +128,10 @@
         font-size: 2.2rem;
         margin-top: 160px;
       }
+      .button-section {
+        width: 85%;
+        padding: 30px 0;
+      }
     }
   </style>
 </head>
@@ -126,17 +143,22 @@
   </header>
 
   <main>
-  <h1>Maths Need Not Apply</h1>
-  <p>Play, Learn, and Explore!</p>
-  <ul>
-    <li><a href="games/silly_outer_space_worm_game/index.html" class="button">Silly Outer Space Worm Game</a></li>
-    <li><a href="games/bloopy_blop/index.html" class="button">Bloopy Blop</a></li> <!-- New button -->
-    <li><a href="https://www.youtube.com/@MathsNeedNotApply" target="_blank" class="button youtube">YouTube Channel</a></li>
-  </ul>
-</main>
+    <h1>Maths Need Not Apply</h1>
+    <p>Play, Learn, and Explore!</p>
+
+    <!-- 🔮 Darker glowing button section -->
+    <div class="button-section">
+      <ul>
+        <li><a href="games/silly_outer_space_worm_game/index.html" class="button">Silly Outer Space Worm Game</a></li>
+        <li><a href="games/bloopy_blop/index.html" class="button">Bloopy Blop</a></li>
+        <li><a href="https://www.youtube.com/@MathsNeedNotApply" target="_blank" class="button youtube">YouTube Channel</a></li>
+      </ul>
+    </div>
+  </main>
 
   <footer>
     © 2025 Maths Need Not Apply | All Rights Reserved
   </footer>
 </body>
 </html>
+
