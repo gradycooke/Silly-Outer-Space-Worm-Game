@@ -154,8 +154,8 @@ function drawPlayer() {
 }
 
 // Background color shift
-function getBackgroundColor(score) {
-    const step = Math.min(Math.floor(score / 10), 50);
+function getBackgroundColor(score) {   
+    const step = Math.min(Math.floor(score / 5), 100); // change every 5 points
     const hue = (step * 7) % 360; // strong rainbow shift
     const saturation = 80 + Math.sin(step / 5) * 20;
     const lightness = 25 + Math.cos(step / 10) * 10;
@@ -245,3 +245,4 @@ function loop() {
 // Initial render
 
 update();
+
