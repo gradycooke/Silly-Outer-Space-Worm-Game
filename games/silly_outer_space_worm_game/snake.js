@@ -231,6 +231,10 @@ function drawGameOverOverlay() {
   ctx.fillText('Press BACKSPACE to Change Difficulty', canvas.width / 2, canvas.height / 2 + 180);
 }
 
-// Start loop
-requestAnimationFrame(draw);
+
+bgImage.onload = () => {
+  // Start loop only after image is ready
+  requestAnimationFrame(draw);
+};
+
 
