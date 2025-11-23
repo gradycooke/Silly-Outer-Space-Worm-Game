@@ -8,43 +8,49 @@ const MAX_TILES = (canvas.width / TILE_SIZE) * (GAME_HEIGHT / TILE_SIZE);
 const eatSound = new Audio('chime-sound-7143.ogg');
 const gameOverSound = new Audio('negative_beeps-6008.ogg');
 const winSound = new Audio('short-crowd-cheer-6713.ogg');
-
 const bgImage = new Image();
 bgImage.src = "starry_background.jpg";
 
+let snake, food, direction, directionChanged, paused;
+let speed = 10;
 let difficultyLabel = "Easy";
-let snake = [{ x: 200, y: 200 }];
-let direction = 'RIGHT';
-let food = { x: 300, y: 300 };
 let gameLoop;
-let speed = 5;
-let directionChanged = false;
-let paused = false;
 let gameOver = false;
 let youWin = false;
+let currentScreen = 'start';
 
-document.addEventListener('keydown', handleGlobalKeys);
-document.addEventListener('keydown', changeDirection);
+function startGame(difficulty) {
+  speed = difficulty;
+  difficultyLabel = speed === 10 ? "Easy" : speed === 20 ? "Medium" : speed === 30 ? "Hard" : "Custom";
+
+  currentScreen = 'game';
+  paused = false;
+  gameOver = false;
+  youWin = false;
+  resetGame();
+  gameLoop = setInterval(update, 1000 / speed);
+}
+
+function resetGame() {
+  snake = [{ x: 200, y: 200 }];
+  direction = 'RIGHT';
+  directionChanged = false;
+  spawnFood();
+}
 
 function handleGlobalKeys(e) {
-  const menuVisible = document.getElementById('menu').style.display !== 'none';
-  const gameOverVisible = document.getElementById('gameOverScreen').style.display !== 'none';
-
-  if (menuVisible) {
+  if (currentScreen === 'start') {
     if (e.key === '1') startGame(10);
-    else if (e.key === '2') startGame(20);
-    else if (e.key === '3') startGame(30);
+    if (e.key === '2') startGame(20);
+    if (e.key === '3') startGame(30);
     return;
   }
 
   if (e.key === 'Backspace') {
     clearInterval(gameLoop);
-    document.getElementById('menu').style.display = 'block';
-    document.getElementById('gameOverScreen').style.display = 'none';
-    gameOver = false;
-    youWin = false;
-  } else if (e.key === 'Enter' || e.key === ' ') {
-    if (gameOverVisible) {
+    currentScreen = 'start';
+  } else if (e.key === 'Enter') {
+    if (currentScreen === 'gameover') {
       startGame(speed);
     } else {
       paused = !paused;
@@ -54,55 +60,26 @@ function handleGlobalKeys(e) {
   }
 }
 
-function startGame(selectedSpeed) {
-  speed = selectedSpeed;
-  paused = false;
-  gameOver = false;
-  youWin = false;
-
-  if (speed === 10) difficultyLabel = "Easy";
-  else if (speed === 20) difficultyLabel = "Medium";
-  else if (speed === 30) difficultyLabel = "Hard";
-  else difficultyLabel = "Custom";
-
-  document.getElementById('menu').style.display = 'none';
-  document.getElementById('gameOverScreen').style.display = 'none';
-
-  resetGame();
-  gameLoop = setInterval(update, 1000 / speed);
-}
-
-function resetGame() {
-  snake = [{ x: 200, y: 200 }];
-  direction = 'RIGHT';
-  spawnFood();
-}
-
 function changeDirection(e) {
-  if (directionChanged || gameOver || document.getElementById('menu').style.display !== 'none') return;
+  if (directionChanged || gameOver || currentScreen !== 'game') return;
 
-  const key = e.key;
-  if (key === 'ArrowUp' && direction !== 'DOWN') {
-    direction = 'UP';
-    directionChanged = true;
-  } else if (key === 'ArrowDown' && direction !== 'UP') {
-    direction = 'DOWN';
-    directionChanged = true;
-  } else if (key === 'ArrowLeft' && direction !== 'RIGHT') {
-    direction = 'LEFT';
-    directionChanged = true;
-  } else if (key === 'ArrowRight' && direction !== 'LEFT') {
-    direction = 'RIGHT';
-    directionChanged = true;
-  }
+  if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+  else if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+  else if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+  else if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+  else return;
+
+  directionChanged = true;
 }
+
+document.addEventListener('keydown', handleGlobalKeys);
+document.addEventListener('keydown', changeDirection);
 
 function spawnFood() {
   let valid = false;
   while (!valid) {
     const x = Math.floor(Math.random() * (canvas.width / TILE_SIZE)) * TILE_SIZE;
     const y = Math.floor(Math.random() * (GAME_HEIGHT / TILE_SIZE)) * TILE_SIZE;
-
     const onSnake = snake.some(segment => segment.x === x && segment.y === y);
     if (!onSnake) {
       food = { x, y };
@@ -112,7 +89,7 @@ function spawnFood() {
 }
 
 function update() {
-  if (paused || gameOver || youWin) return;
+  if (paused || gameOver || youWin || currentScreen !== 'game') return;
 
   const head = { ...snake[0] };
   if (direction === 'UP') head.y -= TILE_SIZE;
@@ -121,27 +98,20 @@ function update() {
   if (direction === 'RIGHT') head.x += TILE_SIZE;
   snake.unshift(head);
 
-  // Check win condition BEFORE collision
   if (head.x === food.x && head.y === food.y) {
-    eatSound.currentTime = 0;
     eatSound.play();
-    if (snake.length >= MAX_TILES) {
-        winGame();
-        return;
-    }
+    if (snake.length >= MAX_TILES) return winGame();
     spawnFood();
   } else {
     snake.pop();
   }
 
-  // Check for wall or self collision
   if (
     head.x < 0 || head.y < 0 ||
     head.x >= canvas.width || head.y >= GAME_HEIGHT ||
     snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)
   ) {
-    loseGame();
-    return;
+    return loseGame();
   }
 
   draw();
@@ -151,57 +121,116 @@ function update() {
 function loseGame() {
   clearInterval(gameLoop);
   gameOver = true;
+  currentScreen = 'gameover';
   gameOverSound.play();
-  showGameOverScreen("GAME OVER", snake.length);
 }
 
 function winGame() {
   clearInterval(gameLoop);
   youWin = true;
+  currentScreen = 'gameover';
   winSound.play();
-  showGameOverScreen("YOU WIN!", snake.length);
-}
-
-function showGameOverScreen(title, score) {
-  document.getElementById('gameOverScreen').style.display = 'block';
-  document.getElementById('gameOverTitle').textContent = title;
-  document.getElementById('finalScore').textContent = `Score: ${score}`;
-  document.getElementById('finalDifficulty').textContent = `Difficulty: ${difficultyLabel}`;
 }
 
 function draw() {
-  ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
+  if (currentScreen === 'start') {
+    drawStartScreen();
+  } else {
+    // Draw game normally
+    ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
 
-  ctx.fillStyle = 'red';
-  ctx.fillRect(food.x, food.y, TILE_SIZE, TILE_SIZE);
+    // Food
+    ctx.fillStyle = 'red';
+    ctx.fillRect(food.x, food.y, TILE_SIZE, TILE_SIZE);
 
-  ctx.fillStyle = 'lime';
-  for (const segment of snake) {
-    ctx.fillRect(segment.x, segment.y, TILE_SIZE, TILE_SIZE);
+    // Snake
+    ctx.fillStyle = 'lime';
+    for (const segment of snake) {
+      ctx.fillRect(segment.x, segment.y, TILE_SIZE, TILE_SIZE);
+    }
+
+    // Score bar
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, GAME_HEIGHT, canvas.width, canvas.height - GAME_HEIGHT);
+
+    // Score
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Century Gothic';
+    ctx.textAlign = 'start';
+    ctx.fillText(`Score: ${snake.length}`, 10, GAME_HEIGHT + 25);
+
+    // Instructions
+    ctx.fillStyle = '#ccc';
+    ctx.font = '12px Century Gothic';
+    const instructions = 'BACKSPACE = Change Difficulty | ENTER = Pause';
+    const instructionsWidth = ctx.measureText(instructions).width;
+    ctx.fillText(instructions, canvas.width - instructionsWidth - 10, GAME_HEIGHT + 18);
+
+    // Footer
+    const footer = '@ MNNA 2025 | Not For Redistribution';
+    ctx.font = '10px Century Gothic';
+    const footerWidth = ctx.measureText(footer).width;
+    ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
+
+    if (currentScreen === 'gameover') {
+      drawGameOverOverlay();
+    }
   }
 
-  // Score Bar background
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, GAME_HEIGHT, canvas.width, canvas.height - GAME_HEIGHT);
-
-  // Score text
-  ctx.fillStyle = 'white';
-  ctx.font = '20px Century Gothic';
-  ctx.textAlign = 'start';
-  ctx.fillText(`Score: ${snake.length}`, 10, GAME_HEIGHT + 25);
-
-  // Controls instructions
-  ctx.fillStyle = '#ccc';
-  ctx.font = '12px Century Gothic';
-  const instructions = 'BACKSPACE = Change Difficulty | ENTER = Pause';
-  const instructionsWidth = ctx.measureText(instructions).width;
-  ctx.fillText(instructions, canvas.width - instructionsWidth - 10, GAME_HEIGHT + 18);
-
-  // Copyright footer
-  const footer = '@ MNNA 2025 | Not For Redistribution';
-  ctx.font = '10px Century Gothic';
-  const footerWidth = ctx.measureText(footer).width;
-  ctx.fillText(footer, canvas.width - footerWidth - 10, GAME_HEIGHT + 35);
-
+  requestAnimationFrame(draw);
 }
+
+function drawStartScreen() {
+  // Draw background image using fixed game height
+  ctx.drawImage(bgImage, 0, 0, canvas.width, GAME_HEIGHT);
+
+  // Subtle float offset
+  const floatY = Math.sin(Date.now() / 600) * 25;
+
+  // Title text (two lines) with black outline and subtle float
+  ctx.font = '70px Century Gothic';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'black';
+  ctx.fillStyle = 'white';
+
+  const titleLine1Y = canvas.height / 2 - 130 + floatY;
+  const titleLine2Y = canvas.height / 2 - 50 + floatY;
+
+  ctx.strokeText('Silly Outer Space', canvas.width / 2, titleLine1Y);
+  ctx.fillText('Silly Outer Space', canvas.width / 2, titleLine1Y);
+
+  ctx.strokeText('Worm Game', canvas.width / 2, titleLine2Y);
+  ctx.fillText('Worm Game', canvas.width / 2, titleLine2Y);
+
+  // Difficulty options (no float, no outline)
+  ctx.font = '30px Century Gothic';
+  ctx.fillStyle = 'white';
+  ctx.fillText('Press 1 for EASY', canvas.width / 2, canvas.height / 2 + 70);
+  ctx.fillText('Press 2 for MEDIUM', canvas.width / 2, canvas.height / 2 + 120);
+  ctx.fillText('Press 3 for HARD', canvas.width / 2, canvas.height / 2 + 170);
+}
+
+
+function drawGameOverOverlay() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = 'white';
+  ctx.font = '80px Century Gothic';
+  ctx.textAlign = 'center';
+  ctx.strokeStyle = 'black';
+  ctx.fillText(gameOver ? 'GAME OVER' : 'YOU WIN!', canvas.width / 2, canvas.height / 2 - 100);
+
+  ctx.font = '35px Century Gothic';
+  ctx.fillText(`Score: ${snake.length}`, canvas.width / 2, canvas.height / 2 - 10);
+  ctx.fillText(`Difficulty: ${difficultyLabel}`, canvas.width / 2, canvas.height / 2 + 35);
+
+  ctx.font = '20px Century Gothic';
+  ctx.fillText('Press ENTER to Restart', canvas.width / 2, canvas.height / 2 + 150);
+  ctx.fillText('Press BACKSPACE to Change Difficulty', canvas.width / 2, canvas.height / 2 + 180);
+}
+
+// Start loop
+requestAnimationFrame(draw);
 
