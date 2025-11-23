@@ -15,6 +15,7 @@ let player = {
   speed: 12
 };
 
+let difficultySpiked = false;
 let titleHue = 0;
 let lastScreen = "start"; // can be "start" or "gameover"
 let lasers = [];
@@ -35,7 +36,7 @@ let hue = 180;
 let showSensitivityMenu = false;
 let pendingSpeed = player.speed; // stores the speed while adjusting
 let minSensitivity = 4;  // you can change this lower bound
-let maxSensitivity = 20; // and this upper bound
+let maxSensitivity = 25; // and this upper bound
 
 function startFromMenu(mode) {
   controlMode = mode;
@@ -284,7 +285,6 @@ function applyGlow() {
 function update() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.shadowBlur = 0;
-
   
 
   // --- Sensitivity Adjustment Menu ---
@@ -367,6 +367,22 @@ function update() {
     ctx.fillText('Press ENTER to adjust arrow key sensitivity', canvas.width / 2, canvas.height / 2 + 120);
     return;
   }
+  
+  // --- Difficulty Spike at 25,000 ---
+  if (!difficultySpiked && score >= 25000) {
+    difficultySpiked = true;
+
+    // Turn lasers and glow red
+    hue = 0;
+
+    // Dramatically increase difficulty
+    minSpeed = 15;
+    maxSpeed = 25;
+
+    // Optionally, shorten spawn intervals more aggressively
+    window.minLaserInterval = 2;
+    window.maxLaserInterval = 20;
+  }
 
   updateDifficulty();
   applyGlow();
@@ -379,8 +395,8 @@ function update() {
     const progress = Math.min(1, frame / MAX_GAME_FRAMES);
 
     // Start between 5–70 frames apart, end between 5–30 frames apart
-    const maxInterval = 70 - progress * 40; 
-    const minInterval = 5;
+    let minInterval = window.minLaserInterval ?? 5;
+    let maxInterval = window.maxLaserInterval ?? (70 - progress * 40);
 
     window.nextLaserSpawn = frame + Math.floor(Math.random() * maxInterval) + minInterval;
   }
