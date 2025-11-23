@@ -77,7 +77,7 @@ document.addEventListener('keydown', e => {
   // --- Normal Controls ---
   if (gameOver && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
     controlMode = 'keyboard';
-    restartGame(true);
+    (true);
     return;
   }
 
@@ -98,7 +98,7 @@ document.addEventListener('keyup', e => {
 canvas.addEventListener('mousedown', () => {
   if (gameOver) {
     controlMode = 'mouse';
-    restartGame(true);
+    (true);
     return;
   }
   if (!started) {
@@ -117,6 +117,8 @@ canvas.addEventListener('mousemove', e => {
 
 // --- RESTART ---
 function restartGame(startImmediately = false) {
+  // 🧹 Fully reset everything that affects laser timing and difficulty
+  cancelAnimationFrame(animationFrameId); // stop any previous loops
   lasers = [];
   score = 0;
   frame = 0;
@@ -124,20 +126,23 @@ function restartGame(startImmediately = false) {
   minSpeed = 2;
   maxSpeed = 5;
   hue = 180;
-  window.nextLaserSpawn = 0;
+  window.nextLaserSpawn = 0; // ✅ ensure laser timing restarts from zero
+
+  // Reset player position
   player.x = canvas.width / 2 - player.width / 2;
   player.y = canvas.height / 2 - player.height / 2;
   mousePos.x = player.x;
   mousePos.y = player.y;
 
+  // Reset animation state
+  started = !!startImmediately;
   if (startImmediately) {
-    started = true;
-    loop();
+    loop(); // start the game
   } else {
-    started = false;
-    update();
+    update(); // draw start screen
   }
 }
+
 
 // --- LASER CREATION ---
 function spawnLaser() {
@@ -405,6 +410,19 @@ function loop() {
   animationFrameId = requestAnimationFrame(update);
 }
 
+// ✅ Always reset spawn and difficulty when page loads or reloads
+window.addEventListener('load', () => {
+  cancelAnimationFrame(animationFrameId);
+  lasers = [];
+  frame = 0;
+  score = 0;
+  window.nextLaserSpawn = 0;
+  minSpeed = 2;
+  maxSpeed = 5;
+  hue = 180;
+});
+
+
 // ✅ Ensure the "Press Start 2P" font is fully loaded before drawing the first frame
 if (document.fonts) {
   document.fonts.load('32px "Press Start 2P"').then(() => {
@@ -414,4 +432,5 @@ if (document.fonts) {
 } else {
   // fallback for older browsers
   window.onload = update;
+
 }
