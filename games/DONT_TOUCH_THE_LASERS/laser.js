@@ -19,10 +19,11 @@ window.addEventListener('pageshow', (event) => {
   }
 });
 
-const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
 // --- Sounds ---
-const laserSound = new Audio('laser-104024.ogg'); 
+const laserSound = new Audio('laser-104024.ogg');
 laserSound.volume = 0.3;
 const gameOverSound = new Audio('game-over-arcade-6435.ogg');
 gameOverSound.volume = 0.5;
@@ -37,7 +38,6 @@ let player = {
 };
 
 // --- Globals ---
-let animationFrameId = null;
 let titleHue = 0;
 let lastScreen = "start";
 let lasers = [];
@@ -46,7 +46,6 @@ let frame = 0;
 let gameOver = false;
 let started = false;
 let controlMode = null;
-let animationFrameId = null;
 let keys = {};
 let mousePos = { x: player.x, y: player.y };
 
@@ -82,7 +81,7 @@ document.addEventListener('keydown', e => {
   if (showSensitivityMenu) {
     if (e.code === 'ArrowUp' && pendingSpeed < maxSensitivity) pendingSpeed++;
     if (e.code === 'ArrowDown' && pendingSpeed > minSensitivity) pendingSpeed--;
-    ();
+    update();
     if (e.code === 'Enter') {
       player.speed = pendingSpeed;
       showSensitivityMenu = false;
@@ -93,7 +92,7 @@ document.addEventListener('keydown', e => {
         gameOver = false;
         started = false;
       }
-      ();
+      update();
     }
     return;
   }
@@ -102,7 +101,7 @@ document.addEventListener('keydown', e => {
     showSensitivityMenu = true;
     pendingSpeed = player.speed;
     lastScreen = gameOver ? "gameover" : "start";
-    ();
+    update();
     return;
   }
 
@@ -149,6 +148,7 @@ canvas.addEventListener('mousemove', e => {
 // --- RESTART ---
 function restartGame(startImmediately = false) {
   cancelAnimationFrame(animationFrameId);
+  animationFrameId = null;
   lasers = [];
   score = 0;
   frame = 0;
@@ -163,7 +163,7 @@ function restartGame(startImmediately = false) {
   mousePos.y = player.y;
   started = !!startImmediately;
   if (startImmediately) loop();
-  else ();
+  else update();
 }
 
 // --- LASERS ---
@@ -267,7 +267,7 @@ function applyGlow() {
 function update() {
   if (animationFrameId) cancelAnimationFrame(animationFrameId);
   animationFrameId = requestAnimationFrame(update);
-  
+
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.shadowBlur = 0;
 
@@ -310,7 +310,6 @@ function update() {
     ctx.fillText('Press ENTER to adjust arrow key sensitivity', canvas.width / 2, y + 60);
     ctx.font = '12px sans-serif';
     ctx.fillText('@ MNNA 2025 | Not For Redistribution', canvas.width / 2, canvas.height - 15);
-    animationFrameId = requestAnimationFrame(update);
     return;
   }
 
@@ -356,7 +355,6 @@ function update() {
   ctx.fillText('SCORE: ' + score, 10, 30);
 
   frame++;
-  animationFrameId = requestAnimationFrame(update);
 }
 
 function loop() {
@@ -371,9 +369,6 @@ if (document.fonts) {
 } else {
   window.onload = update;
 }
-
-
-
 
 
 
