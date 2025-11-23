@@ -1,19 +1,21 @@
-// ✅ Prevent duplicate loops on reload / cache restore
+// ✅ Guaranteed single initialization (fixes reload speed bug)
 let initialized = false;
+let animationFrameId = null;
 
-window.addEventListener('load', () => {
-  if (initialized) return; // prevents double init
+function safeStart() {
+  if (initialized) return; // stop duplicate inits
   initialized = true;
   cancelAnimationFrame(animationFrameId);
   resetGameState();
   update();
-});
+}
 
+window.addEventListener('load', safeStart);
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) {
+    initialized = false; // allow re-init after back/forward cache
     cancelAnimationFrame(animationFrameId);
-    resetGameState();
-    update();
+    safeStart();
   }
 });
 
@@ -35,6 +37,7 @@ let player = {
 };
 
 // --- Globals ---
+let animationFrameId = null;
 let titleHue = 0;
 let lastScreen = "start";
 let lasers = [];
@@ -365,6 +368,7 @@ if (document.fonts) {
 } else {
   window.onload = update;
 }
+
 
 
 
