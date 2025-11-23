@@ -1,7 +1,11 @@
-// 🔄 Force full reload if returning from cache (GitHub Pages or browser back button fix) 
-if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) { 
-  window.location.reload(true); 
-}
+// ✅ Safe reload & animation fix for browser cache / back button
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    cancelAnimationFrame(animationFrameId); // stop any old loops
+    resetGameState(); // cleanly reset everything
+    update(); // restart the start screen animation
+  }
+});
 
 const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d');
 
@@ -61,6 +65,7 @@ function resetGameState() {
 
 // ✅ Reset and start loop on load
 window.addEventListener('load', () => {
+  cancelAnimationFrame(animationFrameId); // prevents double speed
   resetGameState();
   update(); // start screen animation loop
 });
@@ -356,6 +361,7 @@ if (document.fonts) {
 } else {
   window.onload = update;
 }
+
 
 
 
