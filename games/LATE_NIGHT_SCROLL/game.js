@@ -58,7 +58,7 @@ const sfx = {
   star: new Audio('90s-game-ui-10-185103.ogg')
 };
 
-const DEFAULT_VOLUME = 0.7;
+const DEFAULT_VOLUME = 1;
 const volumeSlider = document.getElementById('volumeSlider');
 const SFX_BOOST = {
   bonk: 1,
