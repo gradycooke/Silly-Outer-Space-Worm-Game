@@ -60,11 +60,16 @@ const sfx = {
 
 const DEFAULT_VOLUME = 0.7;
 const volumeSlider = document.getElementById('volumeSlider');
+const SFX_BOOST = {
+  bonk: 1,
+  jump: 2, // give jumps extra punch without reducing others
+  star: 1
+};
 
 function setVolume(v) {
   const level = Math.min(Math.max(v, 0), 1);
-  Object.values(sfx).forEach(a => {
-    if (a) a.volume = level;
+  Object.entries(sfx).forEach(([name, a]) => {
+    if (a) a.volume = Math.min(1, level * (SFX_BOOST[name] || 1));
   });
 }
 
@@ -831,3 +836,4 @@ function persistHighScore(value) {
 
 // Start game
 requestAnimationFrame(gameLoop);
+
