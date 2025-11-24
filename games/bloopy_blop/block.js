@@ -1,11 +1,14 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const volumeBar = document.getElementById('volumeBar');
+const volumeFill = document.getElementById('volumeFill');
 
 const gravity = 0.5;
 const lift = -8;
 
 const flapSound = 'confirm-tap-394001.ogg';
 const gameOverSound = 'synthetic-unique-crash-ding-412501.ogg';
+const HIGH_SCORE_KEY = 'bloopyBlopHighScore';
 
 let player = { x: 80, y: canvas.height / 2, width: 60, height: 60, velocity: 0 };
 let obstacles = [];
@@ -15,16 +18,66 @@ let screen = 'start'; // 'start', 'game', 'gameover'
 let flapInterval = null;
 let animationFrameId = null;
 let titleHue = 0;
+let masterVolume = 0.5; // Shared audio volume (0-1)
+let currentBgColor = '#000';
+let highScore = 0;
+
+function loadHighScore() {
+  try {
+    const stored = localStorage.getItem(HIGH_SCORE_KEY);
+    const parsed = parseInt(stored, 10);
+    if (!isNaN(parsed)) {
+      highScore = parsed;
+    }
+  } catch (_) {
+    highScore = 0;
+  }
+}
+
+function saveHighScore(value) {
+  try {
+    localStorage.setItem(HIGH_SCORE_KEY, String(value));
+  } catch (_) {
+    // Ignore storage errors.
+  }
+}
+
+loadHighScore();
+
+function setGlowColor(color) {
+  const root = document.documentElement;
+  currentBgColor = color;
+  root.style.setProperty('--glow-color', color);
+  const alphaColor = color.startsWith('hsl(')
+    ? color.replace('hsl(', 'hsla(').replace(')', ', 0.45)')
+    : color;
+  root.style.setProperty('--glow-alpha-color', alphaColor);
+}
+
+function updateVolumeUI() {
+  if (!volumeBar || !volumeFill) return;
+  const percent = Math.round(masterVolume * 100);
+  volumeFill.style.width = `${percent}%`;
+  volumeBar.setAttribute('aria-valuenow', percent);
+}
+
+function setVolumeFromClick(event) {
+  if (!volumeBar) return;
+  const rect = volumeBar.getBoundingClientRect();
+  const ratio = Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1);
+  masterVolume = ratio;
+  updateVolumeUI();
+}
 
 function playFlapSound() {
   const s = new Audio(flapSound);
-  s.volume = 0.2;
+  s.volume = 0.2 * masterVolume;
   s.play().catch(() => {});
 }
 
 function playGameOverSound() {
   const s = new Audio(gameOverSound);
-  s.volume = 0.3;
+  s.volume = 0.3 * masterVolume;
   s.currentTime = 0;
   s.play().catch(() => {});
 }
@@ -46,6 +99,11 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   if (e.code === 'Space') stopFlapLoop();
 });
+
+if (volumeBar) {
+  volumeBar.addEventListener('click', setVolumeFromClick);
+  updateVolumeUI();
+}
 
 function startFlapLoop() {
   if (!flapInterval) {
@@ -119,6 +177,10 @@ function endGame() {
   if (screen === 'game') {
     playGameOverSound();
     screen = 'gameover';
+    if (score > highScore) {
+      highScore = score;
+      saveHighScore(highScore);
+    }
   }
 }
 
@@ -147,7 +209,9 @@ function getBackgroundColor(score) {
 
 function drawStartScreen() {
   titleHue = (titleHue + 1) % 360;
-  ctx.fillStyle = `hsl(${titleHue}, 80%, 30%)`;
+  const startColor = `hsl(${titleHue}, 80%, 30%)`;
+  ctx.fillStyle = startColor;
+  setGlowColor(startColor);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.shadowColor = `hsl(${titleHue}, 100%, 70%)`;
@@ -176,11 +240,14 @@ function drawGameOverScreen() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   ctx.fillStyle = 'white';
-  ctx.font = '40px sans-serif';
+  ctx.font = '52px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+
   ctx.font = '20px sans-serif';
-  ctx.fillText('Press SPACE to Restart', canvas.width / 2, canvas.height / 2 + 40);
+  ctx.fillText(`High Score: ${highScore}`, canvas.width / 2, canvas.height / 2 + 48);
+
+  ctx.fillText('Press SPACE to Restart', canvas.width / 2, canvas.height / 2 + 95);
 }
 
 function update() {
@@ -190,7 +257,9 @@ function update() {
     return;
   }
 
-  ctx.fillStyle = getBackgroundColor(score);
+  const bgColor = getBackgroundColor(score);
+  ctx.fillStyle = bgColor;
+  setGlowColor(bgColor);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (screen === 'game') {
@@ -214,3 +283,4 @@ function update() {
 
 // 🔁 Initial render loop
 animationFrameId = requestAnimationFrame(update);
+
