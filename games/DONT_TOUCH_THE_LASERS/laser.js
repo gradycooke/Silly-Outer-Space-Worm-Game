@@ -449,9 +449,10 @@ function update() {
 
     // Instructions (smaller)
     ctx.font = '13px "Press Start 2P"';
-    ctx.fillText('CLICK to play with mouse / touchpad', canvas.width / 2, canvas.height / 2 + 60);
-    ctx.fillText('Press an ARROW KEY to play with arrows', canvas.width / 2, canvas.height / 2 + 90);
-    ctx.fillText('Press ENTER to adjust arrow key sensitivity', canvas.width / 2, canvas.height / 2 + 120);
+    const instructionsOffset = 40; // extra gap beneath high score
+    ctx.fillText('CLICK to play with mouse / touchpad', canvas.width / 2, canvas.height / 2 + 60 + instructionsOffset);
+    ctx.fillText('Press an ARROW KEY to play with arrows', canvas.width / 2, canvas.height / 2 + 90 + instructionsOffset);
+    ctx.fillText('Press ENTER to adjust arrow key sensitivity', canvas.width / 2, canvas.height / 2 + 120 + instructionsOffset);
     return;
   }
   
@@ -517,7 +518,6 @@ if (document.fonts && document.fonts.ready) {
   // Fallback for older browsers
   setTimeout(() => update(), 50);
 }
-
 
 
 
