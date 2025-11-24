@@ -17,6 +17,7 @@ let difficultyLabel = "Easy";
 let gameOver = false;
 let youWin = false;
 let currentScreen = 'start';
+let currentHighScore = 0;
 
 let lastTime = 0;
 
@@ -33,9 +34,37 @@ function loop(timestamp) {
   requestAnimationFrame(loop);
 }
 
+function getHighScoreKey(label) {
+  return `snake_highscore_${label.toLowerCase()}`;
+}
+
+function loadHighScore(label) {
+  try {
+    const stored = localStorage.getItem(getHighScoreKey(label));
+    const parsed = parseInt(stored, 10);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  } catch (err) {
+    return 0;
+  }
+}
+
+function updateHighScore(label, score) {
+  try {
+    const previous = loadHighScore(label);
+    if (score > previous) {
+      localStorage.setItem(getHighScoreKey(label), String(score));
+      return score;
+    }
+    return previous;
+  } catch (err) {
+    return score;
+  }
+}
+
 function startGame(difficulty) {
   speed = difficulty;
   difficultyLabel = speed === 10 ? "Easy" : speed === 20 ? "Medium" : speed === 30 ? "Hard" : "Custom";
+  currentHighScore = loadHighScore(difficultyLabel);
 
   currentScreen = 'game';
   paused = false;
@@ -131,6 +160,7 @@ function update() {
 function loseGame() {
   gameOver = true;
   currentScreen = 'gameover';
+  currentHighScore = updateHighScore(difficultyLabel, snake.length);
   gameOverSound.currentTime = 0;
   gameOverSound.play();
 }
@@ -138,6 +168,7 @@ function loseGame() {
 function winGame() {
   youWin = true;
   currentScreen = 'gameover';
+  currentHighScore = updateHighScore(difficultyLabel, snake.length);
   winSound.play();
 }
 
@@ -218,7 +249,8 @@ function drawGameOverOverlay() {
   ctx.fillStyle = 'white';
   ctx.font = '35px Century Gothic';
   ctx.fillText(`Score: ${snake.length}`, canvas.width / 2, canvas.height / 2 - 10);
-  ctx.fillText(`Difficulty: ${difficultyLabel}`, canvas.width / 2, canvas.height / 2 + 35);
+  ctx.fillText(`High Score (${difficultyLabel}): ${currentHighScore}`, canvas.width / 2, canvas.height / 2 + 30);
+  ctx.fillText(`Difficulty: ${difficultyLabel}`, canvas.width / 2, canvas.height / 2 + 70);
 
   ctx.font = '20px Century Gothic';
   ctx.fillText('Press ENTER to Restart', canvas.width / 2, canvas.height / 2 + 150);
@@ -227,6 +259,8 @@ function drawGameOverOverlay() {
 
 // ✅ Start game loop after background is loaded
 bgImage.onload = () => requestAnimationFrame(loop);
+
+
 
 
 
