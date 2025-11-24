@@ -40,16 +40,60 @@
       box-shadow: 0 0 15px 0.2px white;
     }
 
+    #gameContainer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #volumeControl {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      width: 100%;
+      color: white;
+      font-family: 'Century Gothic';
+    }
+
+    #volumeControl label {
+      font-size: 14px;
+      letter-spacing: 0.5px;
+    }
+
+    #volumeSlider {
+      width: 180px;
+      accent-color: white;
+      cursor: pointer;
+      background: transparent;
+    }
+
   </style>
 </head>
 <body>
   <!-- Home Button -->
   <a href="/" id="homeButton">Home</a>
-  
-  <canvas id="gameCanvas" width="600" height="640"></canvas>
+  <div id="gameContainer">
+    <canvas id="gameCanvas" width="600" height="640"></canvas>
+    <div id="volumeControl">
+      <label for="volumeSlider">Volume</label>
+      <input
+        type="range"
+        id="volumeSlider"
+        min="0"
+        max="100"
+        value="60"
+        aria-label="Game volume"
+      />
+    </div>
+  </div>
   <script src="snake.js"></script>
 </body>
 </html>
+
+
+
 
 
 
