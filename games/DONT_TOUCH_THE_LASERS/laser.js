@@ -1,11 +1,16 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const volumeTrack = document.getElementById('volumeTrack');
+const volumeFill = document.getElementById('volumeFill');
+const volumeThumb = document.getElementById('volumeThumb');
 
 // --- Sound ---
+const BASE_LASER_VOLUME = 0.3;
+const BASE_GAMEOVER_VOLUME = 0.5;
+let masterVolume = 1;
+let isAdjustingVolume = false;
 const laserSound = new Audio('laser-104024.ogg'); 
-laserSound.volume = 0.3; // adjust volume (0.0 - 1.0)
 const gameOverSound = new Audio('game-over-arcade-6435.ogg');
-gameOverSound.volume = 0.5; 
 
 let player = {
   x: canvas.width / 2 - 20,
@@ -37,6 +42,31 @@ let showSensitivityMenu = false;
 let pendingSpeed = player.speed; // stores the speed while adjusting
 let minSensitivity = 4;  // you can change this lower bound
 let maxSensitivity = 25; // and this upper bound
+
+function updateVolumeUI() {
+  if (!volumeTrack || !volumeFill || !volumeThumb) return;
+  const percent = Math.max(0, Math.min(100, masterVolume * 100));
+  volumeFill.style.width = `${percent}%`;
+  volumeThumb.style.left = `${percent}%`;
+}
+
+function applyMasterVolume() {
+  laserSound.volume = BASE_LASER_VOLUME * masterVolume;
+  gameOverSound.volume = BASE_GAMEOVER_VOLUME * masterVolume;
+}
+
+function setMasterVolume(value) {
+  masterVolume = Math.max(0, Math.min(1, value));
+  applyMasterVolume();
+  updateVolumeUI();
+}
+
+function setVolumeFromEvent(e) {
+  if (!volumeTrack) return;
+  const rect = volumeTrack.getBoundingClientRect();
+  const ratio = (e.clientX - rect.left) / rect.width;
+  setMasterVolume(ratio);
+}
 
 function startFromMenu(mode) {
   controlMode = mode;
@@ -114,6 +144,31 @@ canvas.addEventListener('mousemove', e => {
   mousePos.y = e.clientY - rect.top - player.height / 2;
 });
 
+if (volumeTrack) {
+  volumeTrack.addEventListener('mousedown', e => {
+    isAdjustingVolume = true;
+    setVolumeFromEvent(e);
+    e.stopPropagation();
+  });
+
+  volumeTrack.addEventListener('mousemove', e => {
+    if (!isAdjustingVolume) return;
+    setVolumeFromEvent(e);
+  });
+
+  volumeTrack.addEventListener('click', e => {
+    setVolumeFromEvent(e);
+    e.stopPropagation();
+  });
+}
+
+window.addEventListener('mouseup', () => {
+  if (!isAdjustingVolume) return;
+  isAdjustingVolume = false;
+});
+
+setMasterVolume(masterVolume);
+
 // --- RESTART ---
 function restartGame(startImmediately = false) {
   lasers = [];
@@ -178,7 +233,7 @@ function spawnLaser() {
   const size = dir === 'top' || dir === 'bottom' ? width : height;
   const normalized = Math.max(0, Math.min(1, (size - 50) / 100)); // normalize between 0–1
   sound.playbackRate = 0.8 + normalized * 0.8; // 0.8× to 1.6× pitch range
-  sound.volume = 0.3;
+  sound.volume = BASE_LASER_VOLUME * masterVolume;
   sound.play().catch(() => {}); // prevents browser auto-play rejection errors
 
   // --- Push new laser ---
@@ -239,6 +294,7 @@ function checkCollisions() {
 
         // --- Play Game Over Sound ---
         const sound = gameOverSound.cloneNode();
+        sound.volume = BASE_GAMEOVER_VOLUME * masterVolume;
         sound.currentTime = 0;
         sound.play().catch(() => {});
     }
