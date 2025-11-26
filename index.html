@@ -69,7 +69,7 @@
       transition: color 0.3s ease, text-shadow 0.3s ease;
     }
 
-    .wiggle-title:hover {
+    .wiggle-title.active {
       animation: wiggle 1.2s ease-in-out infinite, colorCycle 2.4s linear infinite;
     }
 
@@ -199,6 +199,7 @@
     const buttons = document.querySelectorAll('.button');
     const logo = document.querySelector('header img');
     const title = document.querySelector('.wiggle-title');
+    let titleSequenceActive = false;
   
     const beepSounds = {
       1: new Audio('Assets/Audio/triangle-beep-short-1-185304.ogg'),
@@ -238,12 +239,30 @@
       });
     }
 
-    // Title hover sound
+    // Title click: toggle sequence (spin, color, audio)
     if (title && beepSounds.title) {
-      title.addEventListener('mouseenter', () => {
-        beepSounds.title.currentTime = 0;
-        beepSounds.title.play().catch(err => {
-          console.warn('Audio blocked on title hover:', err);
+      const titleAudio = beepSounds.title;
+
+      const stopTitleSequence = () => {
+        titleSequenceActive = false;
+        title.classList.remove('active');
+        titleAudio.pause();
+        titleAudio.currentTime = 0;
+      };
+
+      titleAudio.addEventListener('ended', stopTitleSequence);
+
+      title.addEventListener('click', () => {
+        if (titleSequenceActive) {
+          stopTitleSequence();
+          return;
+        }
+        titleSequenceActive = true;
+        title.classList.add('active');
+        titleAudio.currentTime = 0;
+        titleAudio.play().catch(err => {
+          console.warn('Audio blocked on title click:', err);
+          stopTitleSequence();
         });
       });
     }
