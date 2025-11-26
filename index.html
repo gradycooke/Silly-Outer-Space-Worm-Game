@@ -181,16 +181,24 @@
       5: new Audio('Assets/Audio/triangle-beep-short-5-185308.ogg'),
       6: new Audio('Assets/Audio/triangle-beep-short-6-185309.ogg')
     };
-
+  
+    // Required for autoplay policies — unlock Audio on first interaction
+    document.body.addEventListener('click', () => {
+      Object.values(beepSounds).forEach(sound => sound.load());
+    }, { once: true });
+  
     buttons.forEach(button => {
       const id = button.dataset.beep;
       if (id && beepSounds[id]) {
         button.addEventListener('mouseenter', () => {
           beepSounds[id].currentTime = 0;
-          beepSounds[id].play();
+          beepSounds[id].play().catch(err => {
+            // Autoplay policies might block it still
+            console.warn('Audio blocked:', err);
+          });
         });
       }
     });
-  </script>
+</script>
 </body>
 </html>
