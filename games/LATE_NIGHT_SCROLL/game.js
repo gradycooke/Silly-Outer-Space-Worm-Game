@@ -13,7 +13,7 @@ const FAST_FALL_VELOCITY = 14; // downward boost when pulling down mid-air
 const STAR_COUNT = 50;
 const MAX_JUMPS = 2;
 const SCORE_PER_MS = 1000 / (5 * 60 * 1000); // ~1000 points over 5 minutes
-// Colorblind-friendly obstacle palette; intentionally no green to avoid matching the player
+// Colorblind-friendly obstacle palette
 const BLOCK_COLORS = ['#E69F00', '#D55E00', '#F0E442', '#CC79A7', '#9B5DE5', '#d0d0d0'];
 const SHAPES = ['rect', 'trapezoid', 'slant', 'step', 'triangle', 'pentagon', 'diamond'];
 let COLLISIONS_ENABLED = true; // set to false to disable collision detection
@@ -59,7 +59,7 @@ const sfx = {
 };
 const music = new Audio('soul-soothing-night-194581.ogg');
 
-const DEFAULT_VOLUME = 0.7;
+const DEFAULT_VOLUME = 1;
 const volumeSlider = document.getElementById('volumeSlider');
 const SFX_BOOST = {
   bonk: 0.5,
