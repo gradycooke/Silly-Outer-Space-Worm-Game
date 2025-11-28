@@ -533,7 +533,7 @@
     numberField.classList.remove('active');
     flowerField.style.display = 'none';
     answerInput.disabled = true;
-    statusMessage.textContent = 'Memorize these numbers!';
+    statusMessage.textContent = '';
     statusMessage.style.textAlign = 'center';
 
     memoryTimeoutId = setTimeout(() => {
@@ -667,8 +667,6 @@
 
       primeField.appendChild(token);
     });
-
-    statusMessage.textContent = '';
   };
 
   const generateArrowCounts = () => {
@@ -1082,6 +1080,7 @@
         stage === 'flowers' ? 99 : stage === 'prime' ? 999 : 999;
       if (!Number.isInteger(guess)) {
         statusMessage.textContent = 'Whole numbers only.';
+        statusMessage.style.textAlign = 'left';
         return;
       }
       if (guess > maxAllowed) {
@@ -1120,25 +1119,41 @@
     renderLives();
     statusMessage.textContent =
       stage === 'memory'
-        ? 'Not quite. New numbers coming up!'
+        ? ''
+        : stage === 'sum'
+          ? 'Nope. Try again!'
         : stage === 'colors'
-          ? 'Nope. Try the sum again!'
-          : stage === 'prime'
-            ? 'Wrong. New numbers incoming!'
+          ? 'Nope. Try again!'
+        : stage === 'prime'
+            ? 'Try again!'
             : stage === 'arrows'
               ? awaitingArrowOrder
                 ? 'Wrong order. New arrows coming up!'
                 : 'Keep pressing the prompted arrows.'
-              : stage === 'angle'
-                ? 'Off by more than 5 degrees. New angle coming up!'
+                : stage === 'angle'
+                  ? 'Off by more than 5 degrees. New angle coming up!'
                 : stage === 'cipher'
-                  ? 'Not RAINBOW. Try again!'
-                  : stage === 'recall'
-                    ? ''
+                  ? 'Try again!'
+                : stage === 'recall'
+                    ? 'Try again!'
                     : stage === 'hanoi'
                       ? 'Sum missed. New sum started.'
-                      : 'Nope. Count again!';
+                       : 'Nope. Count again!';
     if (stage === 'angle') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'flowers') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'sum') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'colors') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'prime') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'arrows') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'cipher') {
+      statusMessage.style.textAlign = 'left';
+    } else if (stage === 'recall') {
       statusMessage.style.textAlign = 'left';
     }
     answerInput.value = '';
@@ -1232,6 +1247,7 @@
         lives -= 1;
         renderLives();
         statusMessage.textContent = 'Wrong key. New arrows coming up!';
+        statusMessage.style.textAlign = 'left';
         if (lives <= 0) {
         endGame(false);
         return;
@@ -1263,13 +1279,31 @@
         } else {
           lives -= 1;
           renderLives();
-          statusMessage.textContent = 'Wrong letter. Cipher reset!';
+          statusMessage.textContent = 'Try again!';
+          statusMessage.style.textAlign = 'left';
           if (lives <= 0) {
           endGame(false);
           return;
         }
-          goToStage('cipher');
+          cipherRaw = '';
+          updateCipherDisplay();
+          answerInput.disabled = false;
+          answerInput.focus();
         }
+      } else if (event.key.length === 1) {
+        event.preventDefault();
+        lives -= 1;
+        renderLives();
+        statusMessage.textContent = 'Try again!';
+        statusMessage.style.textAlign = 'left';
+        if (lives <= 0) {
+          endGame(false);
+          return;
+        }
+        cipherRaw = '';
+        updateCipherDisplay();
+        answerInput.disabled = false;
+        answerInput.focus();
       }
       // Enter handled by input listener
     }
