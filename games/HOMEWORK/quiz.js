@@ -45,7 +45,7 @@
 
   const screens = [startScreen, questionScreen, winScreen, loseScreen];
 
-  let lives = 5;
+  let lives = 3;
   let timeElapsed = 0;
   let timerId = null;
   let correctAnswer = 0;
@@ -319,7 +319,7 @@
   };
 
   const resetState = () => {
-    lives = 5;
+    lives = 3;
     timeElapsed = 0;
     statusMessage.textContent = '';
     statusMessage.style.textAlign = 'center';
@@ -1327,4 +1327,3 @@
     });
   }
 })();
-
