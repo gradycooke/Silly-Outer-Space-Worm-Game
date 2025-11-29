@@ -192,6 +192,7 @@
       border-radius: 12px;
       box-shadow: 0 0 10px rgba(255, 100, 0, 0.4);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-transform: uppercase;
     }
 
     a.button:hover {
@@ -282,6 +283,7 @@
     let snowInterval = null;
     let snowTimeoutId = null;
     let snowCleanupTimeoutId = null;
+    const longestFlakeMs = 16000; // duration + max delay
 
     const createSnowflake = () => {
       if (!snowContainer) return;
@@ -313,6 +315,7 @@
       }
       if (snowCleanupTimeoutId) {
         clearTimeout(snowCleanupTimeoutId);
+        snowCleanupTimeoutId = null;
       }
       // Let existing flakes finish falling before removing the container.
       snowCleanupTimeoutId = setTimeout(() => {
@@ -321,10 +324,14 @@
           snowContainer = null;
         }
         snowCleanupTimeoutId = null;
-      }, 17000);
+      }, longestFlakeMs);
     };
 
     const startSnow = () => {
+      if (snowCleanupTimeoutId) {
+        clearTimeout(snowCleanupTimeoutId);
+        snowCleanupTimeoutId = null;
+      }
       if (!snowActive) {
         snowContainer = document.createElement('div');
         snowContainer.className = 'snow-overlay';
