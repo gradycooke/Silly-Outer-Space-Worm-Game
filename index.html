@@ -120,6 +120,34 @@
       100% { filter: hue-rotate(360deg) brightness(1); background-position: 0% 0%, 100% 0%, 50% 100%, 0% 100%; }
     }
 
+    .snow-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 5;
+    }
+
+    .snowflake {
+      position: absolute;
+      top: -6vh;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: white;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
+      animation: snowfall var(--duration, 10s) linear var(--delay, 0s) forwards;
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes snowfall {
+      to {
+        transform: translate(var(--x-move, 0vw), 110vh);
+        opacity: 0.15;
+      }
+    }
+
     p {
       color: #ccc;
       font-size: 1.1rem;
@@ -219,8 +247,8 @@
       <ul>
         <li><a href="games/HOMEWORK/" class="button" data-beep="1">HOMEWORK</a></li>
         <li><a href="games/LATE_NIGHT_SCROLL/" class="button" data-beep="2">LATE NIGHT SCROLL</a></li>
-        <li><a href="games/silly_outer_space_worm_game" class="button" data-beep="3">SILLY OUTER SPACE WORM GAME</a></li>
-        <li><a href="games/bloopy_blop" class="button" data-beep="4">BLOOPY BLOP</a></li>
+        <li><a href="games/silly_outer_space_worm_game" class="button" data-beep="3">Silly Outer Space Worm Game</a></li>
+        <li><a href="games/bloopy_blop" class="button" data-beep="4">Bloopy Blop</a></li>
         <li><a href="games/DONT_TOUCH_THE_LASERS/" class="button" data-beep="5">DON'T TOUCH THE LASERS</a></li>
       </ul>
     </div>
@@ -246,6 +274,72 @@
       8: new Audio('Assets/Audio/triangle-beep-short-8-185311.ogg'),
       title: new Audio('Assets/Audio/overhead-spin-378217.ogg')
     };
+
+    const secretPhrase = 'tis the season';
+    let typedBuffer = '';
+    let snowActive = false;
+    let snowContainer = null;
+    let snowInterval = null;
+    let snowTimeoutId = null;
+
+    const createSnowflake = () => {
+      if (!snowContainer) return;
+      const flake = document.createElement('span');
+      flake.className = 'snowflake';
+      const size = Math.random() * 4 + 2;
+      const duration = 8 + Math.random() * 5;
+      const delay = Math.random() * 3;
+      const drift = Math.random() * 40 - 20;
+      flake.style.width = `${size}px`;
+      flake.style.height = `${size}px`;
+      flake.style.left = `${Math.random() * 100}vw`;
+      flake.style.setProperty('--duration', `${duration}s`);
+      flake.style.setProperty('--delay', `${delay}s`);
+      flake.style.setProperty('--x-move', `${drift}vw`);
+      snowContainer.appendChild(flake);
+      setTimeout(() => flake.remove(), (duration + delay) * 1000);
+    };
+
+    const stopSnow = () => {
+      snowActive = false;
+      if (snowInterval) {
+        clearInterval(snowInterval);
+        snowInterval = null;
+      }
+      if (snowTimeoutId) {
+        clearTimeout(snowTimeoutId);
+        snowTimeoutId = null;
+      }
+      if (snowContainer) {
+        snowContainer.remove();
+        snowContainer = null;
+      }
+    };
+
+    const startSnow = () => {
+      if (!snowActive) {
+        snowContainer = document.createElement('div');
+        snowContainer.className = 'snow-overlay';
+        document.body.appendChild(snowContainer);
+        snowInterval = setInterval(createSnowflake, 90);
+      }
+      snowActive = true;
+      if (snowTimeoutId) {
+        clearTimeout(snowTimeoutId);
+      }
+      snowTimeoutId = setTimeout(stopSnow, 30000);
+    };
+
+    window.addEventListener('keydown', (event) => {
+      if (event.key.length !== 1 || event.ctrlKey || event.metaKey || event.altKey) return;
+      typedBuffer += event.key.toLowerCase();
+      if (typedBuffer.length > secretPhrase.length) {
+        typedBuffer = typedBuffer.slice(typedBuffer.length - secretPhrase.length);
+      }
+      if (typedBuffer === secretPhrase) {
+        startSnow();
+      }
+    });
   
     // Unlock audio on first interaction
     document.body.addEventListener('click', () => {
