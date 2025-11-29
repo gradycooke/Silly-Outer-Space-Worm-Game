@@ -281,6 +281,7 @@
     let snowContainer = null;
     let snowInterval = null;
     let snowTimeoutId = null;
+    let snowCleanupTimeoutId = null;
 
     const createSnowflake = () => {
       if (!snowContainer) return;
@@ -310,10 +311,17 @@
         clearTimeout(snowTimeoutId);
         snowTimeoutId = null;
       }
-      if (snowContainer) {
-        snowContainer.remove();
-        snowContainer = null;
+      if (snowCleanupTimeoutId) {
+        clearTimeout(snowCleanupTimeoutId);
       }
+      // Let existing flakes finish falling before removing the container.
+      snowCleanupTimeoutId = setTimeout(() => {
+        if (snowContainer) {
+          snowContainer.remove();
+          snowContainer = null;
+        }
+        snowCleanupTimeoutId = null;
+      }, 17000);
     };
 
     const startSnow = () => {
@@ -401,3 +409,4 @@
   </script>
 </body>
 </html>
+
